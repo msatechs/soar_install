@@ -93,7 +93,7 @@ install-cassandra() {
   # Cassandra Install
 
   apt upgrade -y
-  echo "deb https://debian.cassandra.apache.org 311x main" | sudo tee -a /etc/apt/sources.list.d/cassandra.sources.list
+  echo "deb https://debian.cassandra.apache.org 41x main" | sudo tee -a /etc/apt/sources.list.d/cassandra.sources.list
   curl https://downloads.apache.org/cassandra/KEYS | sudo apt-key add -
   apt update --allow-insecure-repositories --allow-unauthenticated
   pkg-install -y cassandra
@@ -112,7 +112,7 @@ install-elasticsearch() {
   log message "Installing Elasticsearch"
   
   wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch |  sudo gpg --dearmor -o /usr/share/keyrings/elasticsearch-keyring.gpg
-  echo "deb [signed-by=/usr/share/keyrings/elasticsearch-keyring.gpg] https://artifacts.elastic.co/packages/8.x/apt stable main" |  sudo tee /etc/apt/sources.list.d/elastic-8.x.list 
+  echo "deb [signed-by=/usr/share/keyrings/elasticsearch-keyring.gpg] https://artifacts.elastic.co/packages/7.x/apt stable main" |  sudo tee /etc/apt/sources.list.d/elastic-7.x.list 
 
   pkg-install elasticsearch
 }
@@ -246,6 +246,7 @@ install-neurons() {
 
 nginx-install(){
   pkg-install nginx
+  rm /etc/nginx/sites-enabled/default
 }
 
 thehive-ssl(){
@@ -257,7 +258,7 @@ thehive-ssl(){
 
 
   echo 'server {
-      listen 80 default_server;
+      listen 9000 default_server;
 
       server_name _;
 
@@ -266,7 +267,7 @@ thehive-ssl(){
 
   server {
     listen 443 ssl;
-    server_name 172.16.202.42;
+    server_name localhost;
 
     #ssl on;
     ssl_certificate       ssl/hive_ca.pem;
@@ -301,7 +302,7 @@ cortex-ssl(){
 
   echo 'server {
     listen 5031 ssl;
-    server_name 172.16.202.42;
+    server_name localhost;
 
     #ssl on;
     ssl_certificate       ssl/cortex_ca.pem;
@@ -339,8 +340,8 @@ start-enable-elasticsearch(){
 }
 
 ### START AND ENABLE THEHIVE
-start-enable-thehive() {
-  start-service thehive 9000
+enable-thehive() {
+  systemctl enable thehive
 }
 
 ### START AND ENABLE CORTEX
@@ -392,15 +393,16 @@ install-thehive
 install-cassandra
 install-elasticsearch
 configure-elasticsearch
+nginx-install
+
 install-python-libs
 install-cortex
 configure-cortex
 install-neurons
 reload-services
-start-enable-thehive
+enable-thehive
 start-enable-elasticsearch
 start-enable-cortex
-nginx-install
 thehive-ssl
 cortex-ssl
 start-enable-nginx
