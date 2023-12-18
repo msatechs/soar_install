@@ -56,8 +56,8 @@ alias dnf="dnf -yq"
 
 pkg-install() {
   PACKAGENAME=$@
-  sudo apt update -qq 
-  sudo RUNLEVEL=1 apt install -yqq ${PACKAGENAME} 
+  sudo apt update 
+  sudo RUNLEVEL=1 apt install -y ${PACKAGENAME} 
 }
 
 # Start service, wait for it to be available and enable it
